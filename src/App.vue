@@ -2,13 +2,21 @@
 import { ref, onMounted } from "vue";
 
 const display = ref("");
+const lastResult = ref(null);
+const lastInputWasOperator = ref(false);
 
 const appendValue = (value) => {
+  if (lastResult.value !== null && !lastInputWasOperator.value) {
+    display.value = "";
+    lastResult.value = null;
+  }
   display.value += value;
+  lastInputWasOperator.value = false;
 };
 
 const clearDisplay = () => {
   display.value = "";
+  lastResult.value = null;
 };
 
 const backspace = () => {
@@ -17,7 +25,8 @@ const backspace = () => {
 
 const calculateResult = () => {
   try {
-    display.value = eval(display.value);
+    display.value = eval(display.value).toString();
+    lastResult.value = display.value;
   } catch (error) {
     display.value = "Error";
   }
@@ -25,7 +34,8 @@ const calculateResult = () => {
 
 const calculateSquare = () => {
   try {
-    display.value = Math.pow(eval(display.value), 2);
+    display.value = Math.pow(eval(display.value), 2).toString();
+    lastResult.value = display.value;
   } catch (error) {
     display.value = "Error";
   }
@@ -33,7 +43,8 @@ const calculateSquare = () => {
 
 const calculateSquareRoot = () => {
   try {
-    display.value = Math.sqrt(eval(display.value));
+    display.value = Math.sqrt(eval(display.value)).toString();
+    lastResult.value = display.value;
   } catch (error) {
     display.value = "Error";
   }
@@ -41,17 +52,31 @@ const calculateSquareRoot = () => {
 
 const calculatePercentage = () => {
   try {
-    display.value = eval(display.value) / 100;
+    display.value = (eval(display.value) / 100).toString();
+    lastResult.value = display.value;
   } catch (error) {
     display.value = "Error";
   }
 };
 
+const appendOperator = (operator) => {
+  if (lastResult.value !== null) {
+    display.value = lastResult.value;
+  }
+  if ("+-*/".includes(display.value.slice(-1))) {
+    display.value = display.value.slice(0, -1);
+  }
+  display.value += operator;
+  lastInputWasOperator.value = true;
+};
+
 // Handle keyboard input
 const handleKeyPress = (event) => {
   const key = event.key;
-  if (!isNaN(key) || "+-*/.".includes(key)) {
+  if (!isNaN(key) || key === ".") {
     appendValue(key);
+  } else if ("+-*/".includes(key)) {
+    appendOperator(key);
   } else if (key === "Enter") {
     calculateResult();
   } else if (key === "Backspace") {
@@ -70,28 +95,28 @@ onMounted(() => {
 <template>
   <div class="container">
     <div class="calculator">
-      <h2 class="title">Your Calculator</h2>
+      <h2 class="title">Calculator</h2>
       <input v-model="display" disabled class="display" />
       <div class="buttons">
         <button @click="clearDisplay" class="operator">C</button>
         <button @click="backspace" class="operator">⌫</button>
         <button @click="calculatePercentage" class="operator">%</button>
-        <button @click="appendValue('/')" class="operator">÷</button>
+        <button @click="appendOperator('/')" class="operator">÷</button>
 
         <button @click="appendValue('7')">7</button>
         <button @click="appendValue('8')">8</button>
         <button @click="appendValue('9')">9</button>
-        <button @click="appendValue('*')" class="operator">×</button>
+        <button @click="appendOperator('*')" class="operator">×</button>
 
         <button @click="appendValue('4')">4</button>
         <button @click="appendValue('5')">5</button>
         <button @click="appendValue('6')">6</button>
-        <button @click="appendValue('-')" class="operator">−</button>
+        <button @click="appendOperator('-')" class="operator">−</button>
 
         <button @click="appendValue('1')">1</button>
         <button @click="appendValue('2')">2</button>
         <button @click="appendValue('3')">3</button>
-        <button @click="appendValue('+')" class="operator">+</button>
+        <button @click="appendOperator('+')" class="operator">+</button>
 
         <button @click="appendValue('0')">0</button>
         <button @click="appendValue('.')">.</button>
