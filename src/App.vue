@@ -25,7 +25,9 @@ const backspace = () => {
 
 const calculateResult = () => {
   try {
-    display.value = eval(display.value).toString();
+    // Convert `x%y` to `(y * (x / 100))` for real calculator behavior
+    let expression = display.value.replace(/(\d+)%(\d+)/g, "($2 * ($1 / 100))");
+    display.value = eval(expression).toString();
     lastResult.value = display.value;
   } catch (error) {
     display.value = "Error";
@@ -50,20 +52,11 @@ const calculateSquareRoot = () => {
   }
 };
 
-const calculatePercentage = () => {
-  try {
-    display.value = (eval(display.value) / 100).toString();
-    lastResult.value = display.value;
-  } catch (error) {
-    display.value = "Error";
-  }
-};
-
 const appendOperator = (operator) => {
   if (lastResult.value !== null) {
     display.value = lastResult.value;
   }
-  if ("+-*/".includes(display.value.slice(-1))) {
+  if ("+-*/%".includes(display.value.slice(-1))) {
     display.value = display.value.slice(0, -1);
   }
   display.value += operator;
@@ -75,7 +68,7 @@ const handleKeyPress = (event) => {
   const key = event.key;
   if (!isNaN(key) || key === ".") {
     appendValue(key);
-  } else if ("+-*/".includes(key)) {
+  } else if ("+-*/%".includes(key)) {
     appendOperator(key);
   } else if (key === "Enter") {
     calculateResult();
@@ -100,7 +93,7 @@ onMounted(() => {
       <div class="buttons">
         <button @click="clearDisplay" class="operator">C</button>
         <button @click="backspace" class="operator">⌫</button>
-        <button @click="calculatePercentage" class="operator">%</button>
+        <button @click="appendOperator('%')" class="operator">%</button>
         <button @click="appendOperator('/')" class="operator">÷</button>
 
         <button @click="appendValue('7')">7</button>
