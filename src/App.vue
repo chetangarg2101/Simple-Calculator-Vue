@@ -8,9 +8,9 @@ const lastInputWasOperator = ref(false);
 const appendValue = (value) => {
   if (lastResult.value !== null && !lastInputWasOperator.value) {
     display.value = "";
-    lastResult.value = null;
   }
   display.value += value;
+  lastResult.value = null;
   lastInputWasOperator.value = false;
 };
 
@@ -25,8 +25,7 @@ const backspace = () => {
 
 const calculateResult = () => {
   try {
-    // Convert `x%y` to `(y * (x / 100))` for real calculator behavior
-    let expression = display.value.replace(/(\d+)%(\d+)/g, "($2 * ($1 / 100))");
+    let expression = display.value.replace(/(\d+)%(\d+)/g, "($1 * ($2 / 100))");
     display.value = eval(expression).toString();
     lastResult.value = display.value;
   } catch (error) {
@@ -63,7 +62,6 @@ const appendOperator = (operator) => {
   lastInputWasOperator.value = true;
 };
 
-// Handle keyboard input
 const handleKeyPress = (event) => {
   const key = event.key;
   if (!isNaN(key) || key === ".") {
@@ -71,6 +69,13 @@ const handleKeyPress = (event) => {
   } else if ("+-*/%".includes(key)) {
     appendOperator(key);
   } else if (key === "Enter") {
+    const equalButton = document.querySelector(".equal");
+    if (equalButton) {
+      equalButton.classList.add("active");
+      setTimeout(() => {
+        equalButton.classList.remove("active");
+      }, 150);
+    }
     calculateResult();
   } else if (key === "Backspace") {
     backspace();
@@ -79,7 +84,6 @@ const handleKeyPress = (event) => {
   }
 };
 
-// Attach keyboard event listener
 onMounted(() => {
   window.addEventListener("keydown", handleKeyPress);
 });
@@ -123,7 +127,6 @@ onMounted(() => {
 </template>
 
 <style scoped>
-/* Background */
 .container {
   position: fixed;
   top: 0;
@@ -136,7 +139,6 @@ onMounted(() => {
   background: linear-gradient(135deg, #1e3c72, #ffffff);
 }
 
-/* Calculator */
 .calculator {
   width: 320px;
   padding: 20px;
@@ -147,7 +149,6 @@ onMounted(() => {
   text-align: center;
 }
 
-/* Title */
 .title {
   font-size: 24px;
   font-weight: bold;
@@ -155,7 +156,6 @@ onMounted(() => {
   margin-bottom: 10px;
 }
 
-/* Display */
 .display {
   width: 100%;
   height: 60px;
@@ -171,7 +171,6 @@ onMounted(() => {
   font-weight: bold;
 }
 
-/* Buttons */
 .buttons {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -208,7 +207,8 @@ button:hover {
   grid-column: span 4;
 }
 
-.equal:hover {
+.equal:hover, .equal.active {
   background: rgba(76, 175, 80, 1);
+  transform: scale(0.95);
 }
 </style>
